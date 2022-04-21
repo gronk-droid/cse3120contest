@@ -9,14 +9,7 @@ random_string BYTE 41 DUP(?), 0
 string_size DWORD ?
 
 intro_slide BYTE "Written by Tyler Zars and Grant Butler", 10,
-                 "For CSE3210 Contest #2", 10 ,0
-
-; title BYTE  "             ,--.     ,--.                 ", 10,
-;             " ,---.  ,---.|  ,---. `--' ,---. ,--,--,--.", 10,
-;             "(  .-' | .--'|  .-.  |,--.(  .-' |        |", 10,
-;             ".-'  `)\ `--.|  | |  ||  |.-'  `)|  |  |  |", 10,
-;             "`----'  `---'`--' `--'`--'`----' `--`--`--'", 10, 0
-
+                 "For CSE3210 Contest #1", 10 ,0
 
 instruction_string BYTE "Hi! Welcome to the Ultimate Typing Test!", 10,
                         "This test will give you a random string of letters,", \
@@ -68,42 +61,17 @@ seconds_display_string BYTE "Time: ", 0
 
 invalid_input_string BYTE "USER INPUT INVALID!!!", 0
 
-heightScreen BYTE ?
-widthScreen BYTE ?
-halfHeight BYTE ?
-halfWidth BYTE ?
-
 .code
     main PROC
-        mov eax, black + (lightGray * 16)
-        call SetTextColor
-        call Clrscr
         ; Print Start Info
         mov edx, offset intro_slide
         call WriteString
-
-        call GetScreenDimensions
 
         ; Set console title name
         INVOKE SetConsoleTitle, ADDR game_title
 
         ; wait (seconds x 1000) and clear everything
-        INVOKE Sleep, 2000
-        call Clrscr
-
-        ; mov dl, widthScreen - 72
-        ; mov dh, halfHeight
-        ; call Gotoxy
-        ; mov edx, OFFSET title_one
-        ; call WriteString
-        ; mov edx, OFFSET title_one2
-
-        ; mov dl, widthScreen - 64
-        ; mov dh, halfHeight + 9
-        ; mov edx, OFFSET title_two
-        ; call WriteString
-
-        INVOKE Sleep, 4000
+        INVOKE Sleep, 1000
         call Clrscr
 
         ; Print Gameplay Info
@@ -283,7 +251,7 @@ halfWidth BYTE ?
                     call WriteChar
 
                     ; reset the color
-                    mov eax, black + (lightGray * 16)
+                    mov  eax, white + (black * 16)
                     call SetTextColor
 
                     jmp end_loop
@@ -308,7 +276,8 @@ halfWidth BYTE ?
                     mov  al, user_input_string[ebx]
                     call WriteChar
 
-                    mov eax, black + (lightGray * 16)
+                    ; reset the color
+                    mov  eax, white + (black*16)
                     call SetTextColor
 
                     ; Add one correct letter to the count
@@ -337,6 +306,18 @@ halfWidth BYTE ?
 
             ; Print number of incorrect letters typed
             mov edx, OFFSET incorrect_number_string
+            call WriteString
+
+            push eax
+            mov eax, string_size
+            sub ax, bp
+            call WriteInt
+            pop eax
+
+            call Crlf
+
+            ; Print user time to write the string
+            mov edx, OFFSET seconds_display_string
             call WriteString
 
             push eax
@@ -416,22 +397,6 @@ halfWidth BYTE ?
             mov eax, ebx ; send it back in al properly
 	        ret
     GenerateReandomLetter ENDP
-
-    GenerateReandomChar PROC
-    ; This proc returns AL with a random chararacter
-
-    ; Choose a random char
-    mov eax, 94
-    call RandomRange
-
-    ; Move to ebx for storage
-    mov ebx, eax
-
-    ; Generate a random number and compare to choose upper/lower case
-    add ebx, 32
-    mov eax, ebx ; send it back in al properly
-    ret
-    GenerateReandomChar ENDP
 
     GetScreenDimensions PROC
         ; get screen dimensions for printing stuff
