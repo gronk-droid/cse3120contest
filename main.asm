@@ -1,5 +1,5 @@
 ; Written by Tyler Zars (tzars2019@my.fit.edu) & Grant Butler (gbutler2020@my.fit.edu)
-; CSE3210 Contest #1
+; CSE3210 Contest #2
 
 INCLUDE Irvine32.inc
 
@@ -9,14 +9,7 @@ random_string BYTE 41 DUP(?), 0
 string_size DWORD ?
 
 intro_slide BYTE "Written by Tyler Zars and Grant Butler", 10,
-                 "For CSE3210 Contest #2", 10 ,0
-
-; title BYTE  "             ,--.     ,--.                 ", 10,
-;             " ,---.  ,---.|  ,---. `--' ,---. ,--,--,--.", 10,
-;             "(  .-' | .--'|  .-.  |,--.(  .-' |        |", 10,
-;             ".-'  `)\ `--.|  | |  ||  |.-'  `)|  |  |  |", 10,
-;             "`----'  `---'`--' `--'`--'`----' `--`--`--'", 10, 0
-
+                 "For CSE3210 Contest #1", 10 ,0
 
 instruction_string BYTE "Hi! Welcome to the Ultimate Typing Test!", 10,
                         "This test will give you a random string of letters,", \
@@ -42,6 +35,10 @@ game_title BYTE "The Ultimate Typing Test",0
 
 user_input_string BYTE 41 DUP(?), 0
 
+elapsed_time DWORD ?
+
+elapsed_ms DWORD ?
+
 play_again_prompt BYTE "Do you want to play again (Y = Yes (capital), N = No)? ", 10, 0
 
 user_play_again BYTE 5 DUP(?), 0
@@ -56,55 +53,31 @@ start_seconds DWORD ?
 
 end_seconds DWORD ?
 
-elapsed_time DWORD ?
-
-elapsed_ms DWORD ?
-
 choose_game_mode_string BYTE "Choose game mode (1 = Letters, 2 = Any Character): ", 0
 
 user_game_mode DWORD ?
 
-seconds_display_string BYTE "Time: ", 0
+seconds_display_string BYTE "Seconds to write the random string: ", 0
 
 invalid_input_string BYTE "USER INPUT INVALID!!!", 0
 
-heightScreen BYTE ?
-widthScreen BYTE ?
-halfHeight BYTE ?
-halfWidth BYTE ?
-
 .code
     main PROC
+        ; Set color
         mov eax, black + (lightGray * 16)
         call SetTextColor
         call Clrscr
+
         ; Print Start Info
         mov edx, offset intro_slide
         call WriteString
 
-        call GetScreenDimensions
-
         ; Set console title name
-        INVOKE SetConsoleTitle, ADDR game_title
+        INVOKE SetConsoleTitle, ADDR game_title 
 
         ; wait (seconds x 1000) and clear everything
-        INVOKE Sleep, 2000
-        call Clrscr
-
-        ; mov dl, widthScreen - 72
-        ; mov dh, halfHeight
-        ; call Gotoxy
-        ; mov edx, OFFSET title_one
-        ; call WriteString
-        ; mov edx, OFFSET title_one2
-
-        ; mov dl, widthScreen - 64
-        ; mov dh, halfHeight + 9
-        ; mov edx, OFFSET title_two
-        ; call WriteString
-
-        INVOKE Sleep, 4000
-        call Clrscr
+        INVOKE Sleep, 1000
+        call Clrscr 
 
         ; Print Gameplay Info
         mov edx, offset instruction_string
@@ -118,7 +91,7 @@ halfWidth BYTE ?
         ; Print instructions to continue
         mov edx, offset instruction_confirm_string
         call WriteString
-
+        
         ; Wait for user to input to confirm instructions read
         wait_for_key:
             ; Delay to not miss
@@ -144,13 +117,13 @@ halfWidth BYTE ?
                 inc ebx
                 cmp ebx, 40
                 jle reset_word
-
+            
             ; Reset string size
             mov string_size, 000000000h
 
             ; Wait (seconds x 1000) and clear everything
             INVOKE Sleep, 1000
-            call Clrscr
+            call Clrscr 
 
             ; Get user input for game mode
             user_game_mode_loop:
@@ -158,7 +131,7 @@ halfWidth BYTE ?
                 call WriteString
                 call readInt
                 mov user_game_mode, eax
-
+                
                 ; Compare game mode option and jump if it is correct/incorrect
                 cmp user_game_mode, 0
                 jbe error_jump ; Out of range
@@ -175,7 +148,7 @@ halfWidth BYTE ?
                     call Clrscr
                     jne user_game_mode_loop
 
-
+            
             get_string_size:
                 ; Get user input for number of chars
                 mov edx, offset size_selection_string
@@ -204,16 +177,16 @@ halfWidth BYTE ?
                 continute_random_string:
                     ; add it to the string
                     mov random_string[edx], al
-
+	            
                     ; move edx to the next location
                     inc edx
-
+                
                     ; string_size decides number of chars
                     cmp edx, string_size
-
+	        
                     ; jump while we are below, this allows us to add one extra space at the end of the newline
                     jb make_random_string
-
+            
                     ; add the newline to the end
                     mov random_string[edx], 0Ah
 
@@ -227,7 +200,7 @@ halfWidth BYTE ?
                 INVOKE Sleep, 1000 ; uses EAX so we put it on the stack for keeping
                 pop eax
                 cmp eax, 0
-                jne countdown
+                jne countdown   
 
             ; Print the random word out
             mov edx, OFFSET random_word_header ; print the header
@@ -241,7 +214,7 @@ halfWidth BYTE ?
 
             ; Save current time for total time
             call GetMseconds
-            mov  start_seconds, eax
+            mov  start_seconds, eax  
 
             ; get user input
             mov  edx, OFFSET user_input_string
@@ -261,7 +234,7 @@ halfWidth BYTE ?
 
                 jne wrong_letter
                 je correct_letter
-
+            
                 ; If wrong, change background color to red
                 wrong_letter:
                    ; Line up to the correct character
@@ -269,7 +242,7 @@ halfWidth BYTE ?
 
                     mov al, LENGTHOF get_input_string
                     sub al, 1 ; remove null char
-
+                
                     add dl, al
                     mov dh, 6  ; row
                     call Gotoxy
@@ -285,7 +258,7 @@ halfWidth BYTE ?
                     ; reset the color
                     mov eax, black + (lightGray * 16)
                     call SetTextColor
-
+                
                     jmp end_loop
 
                 ; If right, change background color to green
@@ -295,7 +268,7 @@ halfWidth BYTE ?
 
                     mov al, LENGTHOF get_input_string
                     sub al, 1 ; remove null char
-
+                
                     add dl, al
                     mov dh, 6  ; row
                     call Gotoxy
@@ -308,12 +281,13 @@ halfWidth BYTE ?
                     mov  al, user_input_string[ebx]
                     call WriteChar
 
+                    ; reset the color
                     mov eax, black + (lightGray * 16)
                     call SetTextColor
 
-                    ; Add one correct letter to the count
+                    ; Add one correct letter to the count 
                     inc bp
-
+                
                     jmp end_loop
 
                 end_loop:
@@ -321,13 +295,13 @@ halfWidth BYTE ?
                     inc ebx
                     cmp ebx, string_size
                     jb check_if_correct_loop
-
+        
             call Crlf
 
             ; Print number of correct letters typed
             mov edx, OFFSET correct_number_string
             call WriteString
-
+            
             push eax
             mov ax, bp
             call WriteInt
@@ -338,7 +312,19 @@ halfWidth BYTE ?
             ; Print number of incorrect letters typed
             mov edx, OFFSET incorrect_number_string
             call WriteString
+            
+            push eax
+            mov eax, string_size
+            sub ax, bp
+            call WriteDec
+            pop eax
 
+            call Crlf
+
+            ; Print user time to write the string
+            mov edx, OFFSET seconds_display_string
+            call WriteString
+            
             push eax
             mov eax, end_seconds
             sub eax, start_seconds
@@ -363,7 +349,7 @@ halfWidth BYTE ?
             call WriteChar
 
             call Crlf
-
+            
             ; Loop game!!!!
             ; Put user input prompt on screen
             mov edx, OFFSET play_again_prompt
@@ -400,13 +386,13 @@ halfWidth BYTE ?
         call RandomRange
         cmp eax, 1
         je uppercase_letter ; 1 = uppercase
-        jne lowercase_letter
+        jne lowercase_letter 
 
         uppercase_letter:
             ; make it uppercase
             add ebx, 65
             jmp finish_GenerateReandomLetter
-
+        
         lowercase_letter:
             ; make it lowercase
             add ebx, 97
@@ -432,46 +418,4 @@ halfWidth BYTE ?
     mov eax, ebx ; send it back in al properly
     ret
     GenerateReandomChar ENDP
-
-    GetScreenDimensions PROC
-        ; get screen dimensions for printing stuff
-        ; get size of screen
-        xor edx, edx
-        call GetMaxXY
-
-        dec dl ; highest column -> x-1
-        dec dh ; highest row -> y-1
-
-        ; store the size
-        mov widthScreen, dl
-        mov heightScreen, dh
-
-        ; divide for half
-        mov al, widthScreen
-        mov bl, 2
-        xor dl, dl
-        div bl
-        ; store value
-        mov halfWidth, al
-
-        ; clear registers
-        xor eax, eax
-        xor ebx, ebx
-        xor edx, edx
-
-        ; divide
-        mov al, heightScreen
-        mov bl, 2
-        xor dl, dl
-        div bl
-        ; store
-        mov halfHeight, al
-
-        ; clear registers
-        xor eax, eax
-        xor ebx, ebx
-        xor edx, edx
-
-        ret
-    GetScreenDimensions ENDP
 END main
